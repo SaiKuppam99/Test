@@ -56,3 +56,23 @@ print('Paths:', paths)
 print('Values:', values)
 
 
+
+import subprocess
+import json
+
+# Define the command to execute
+cmd = ['vault', 'kv', 'get', '-format=json', '<path/to/secret>']
+
+# Execute the command and capture the output
+output = subprocess.check_output(cmd)
+
+# Parse the JSON output into a Python object
+result = json.loads(output)
+
+# Extract the data dictionary from the result
+data = result['data']['data']
+
+# Iterate over the key-value pairs in the data dictionary and print them
+for key, value in data.items():
+    print(f'{key}: {value}')
+
