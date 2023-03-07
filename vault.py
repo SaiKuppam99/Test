@@ -20,3 +20,22 @@ print('\nFolders:')
 print('--------')
 for folder in folders:
     print(folder)
+
+
+
+cmd = ['vault', 'kv', 'list', '-format=json', 'TAS-EU']
+try:
+    output = subprocess.check_output(cmd)
+except subprocess.CalledProcessError as e:
+    print(f"Command '{e.cmd}' returned non-zero exit status {e.returncode}.")
+    print("Output:\n", e.output.decode())
+    exit(1)
+
+# Parse the JSON output into a Python object
+try:
+    result = json.loads(output)
+except ValueError as e:
+    print("Error decoding JSON output:", e)
+    print("Output:\n", output.decode())
+    exit(1)
+
