@@ -37,10 +37,22 @@ print('Keys:')
 print('-----')
 for key in keys:
     print(key)
+======================================================================
+keys = ['deployment/', 'test', 'config/', 'scripts']
 
-    result = json.loads(output)
-except ValueError as e:
-    print("Error decoding JSON output:", e)
-    print("Output:\n", output.decode())
-    exit(1)
+# Create empty lists to store the values
+paths = []
+values = []
+
+# Iterate through the keys and split them into paths and values
+for key in keys:
+    if key.endswith('/'):
+        paths.append(key)
+    else:
+        values.append(key)
+
+# Print the resulting lists
+print('Paths:', paths)
+print('Values:', values)
+
 
