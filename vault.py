@@ -23,16 +23,21 @@ for folder in folders:
 
 
 
-cmd = ['vault', 'kv', 'list', '-format=json', 'TAS-EU']
-try:
-    output = subprocess.check_output(cmd)
-except subprocess.CalledProcessError as e:
-    print(f"Command '{e.cmd}' returned non-zero exit status {e.returncode}.")
-    print("Output:\n", e.output.decode())
-    exit(1)
+import subprocess
 
-# Parse the JSON output into a Python object
-try:
+cmd = ['vault', 'kv', 'list', 'TAS-EU']
+output = subprocess.check_output(cmd).decode('utf-8')
+
+# Extract the list of keys from the output
+keys_str = output.strip().split('\n')[1:]
+keys = [int(key) for key in keys_str if not key.endswith('/')]
+
+# Print the list of keys
+print('Keys:')
+print('-----')
+for key in keys:
+    print(key)
+
     result = json.loads(output)
 except ValueError as e:
     print("Error decoding JSON output:", e)
