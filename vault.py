@@ -76,3 +76,14 @@ data = result['data']['data']
 for key, value in data.items():
     print(f'{key}: {value}')
 
+    
+import hvac
+
+client = hvac.Client(url='http://localhost:8200')
+client.token = 'my-token'
+
+path = 'secret/myapp/config'
+mount_point = 'kv'
+
+secret_data = client.secrets.kv.v1.read_secret(path=path, mount_point=mount_point)
+
