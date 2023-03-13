@@ -1,16 +1,22 @@
-jobs:
-  my-job:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Replace default profile with custom profile
-        run: |
-          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            profile_name="production"
-          elif [ "${{ github.event.inputs.environment }}" = "dev" ]; then
-            profile_name="development"
-          fi
-          sed -i "s/\[default\]/\[$profile_name\]/" ~/.aws/credentials
-          cat ~/.aws/credentials # (optional) prints the content of the file for debugging purpose
-          echo "Profile name changed to [$profile_name]"
-        env:
-          profile_name: ""
+import hvac
+
+def get_all_vault_secrets(vault_url, vault_token, secrets_engine):
+    client = hvac.Client(url=vault_url, token=vault_token)
+
+    try:
+        secrets_list = client.secrets.system.list_secrets(path=secrets_engine)["data"]["keys"]
+        secrets = {}
+        for secret_key in secrets_list:
+            secret_path = f"{secrets_engine}/{secret_key}"
+            secret = client.secrets.kv.v2.read_secret_version(path=secret_path)
+            secrets[secret_key] = secret["data"]["data"]
+        return secrets
+    except Exception as e:
+        raise ValueError(f"Unable to retrieve secrets from Vault: {str(e)}")
+
+vault_url = "http://localhost:8200"
+vault_token = "<your_token_here>"
+secrets_engine = "TASK"
+
+secrets = get_all_vault_secrets(vault_url, vault_token, secrets_engine)
+print(secrets)
