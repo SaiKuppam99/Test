@@ -4,12 +4,17 @@ def get_all_vault_secrets(vault_url, vault_token, secrets_engine):
     client = hvac.Client(url=vault_url, token=vault_token)
 
     try:
-        secrets_list = client.secrets.system.list_secrets(path=secrets_engine)["data"]["keys"]
+        secrets_list = client.secrets.kv.v1.list_secrets(path=secrets_engine)["data"]["keys"]
         secrets = {}
         for secret_key in secrets_list:
             secret_path = f"{secrets_engine}/{secret_key}"
-            secret = client.secrets.kv.v2.read_secret_version(path=secret_path)
-            secrets[secret_key] = secret["data"]["data"]
+            secret = client.secrets.kv.v1.read_secret(path=secret_path)
+            if "data" in secret:
+                secrets[secret_key] = secret["data"]
+            else:
+                subsecrets = get_all_vault_secrets(vault_url, vault_token, secret_path)
+                if subsecrets:
+                    secrets[secret_key] = subsecrets
         return secrets
     except Exception as e:
         raise ValueError(f"Unable to retrieve secrets from Vault: {str(e)}")
