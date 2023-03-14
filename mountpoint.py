@@ -1,24 +1,49 @@
 import hvac
 
-# Create a Vault client object
-client = hvac.Client(url='https://vault.example.com', token='<your-token>')
+def list_secrets_and_paths(mount_point, client):
+    secrets = []
+    paths = []
 
-# Define the mount point you want to check
-mount_point = 'my-secret'
-
-# List the paths under the mount point
-paths = client.secrets.kv.v2.list_secrets(path=mount_point)['data']['keys']
-if paths:
-    print(f"The following paths are under {mount_point}:")
-    for path in paths:
-        print(f"- {path}")
-        # List any secrets under each path
-        secrets = client.secrets.kv.v2.read_secret_version(path=f"{mount_point}/{path}")['data']['data']
-        if secrets:
-            print(f"The following secrets are under {mount_point}/{path}:")
-            for key, value in secrets.items():
-                print(f"- {key}: {value}")
+    # List all secrets and paths under the given mount point
+    secrets_response = client.secrets.kv.v2.list_secrets(
+        mount_point=mount_point,
+        path='',
+    )
+    secrets_list = secrets_response['data']['keys']
+    for item in secrets_list:
+        if item.endswith('/'):
+            paths.append(item)
         else:
-            print(f"There are no secrets under {mount_point}/{path}.")
-else:
-    print(f"There are no paths under {mount_point}.")
+            secrets.append(item)
+
+    # List latest version of each secret
+    for secret in secrets:
+        secret_metadata_response = client.secrets.kv.v2.read_metadata(
+            mount_point=mount_point,
+            path=secret
+        )
+        latest_version = secret_metadata_response['data']['latest_version']
+        secrets[secrets.index(secret)] = "{} (latest version: {})".format(secret, latest_version)
+
+    return (paths, secrets)
+
+
+from function.secrets import list_secrets_and_paths
+import hvac
+
+client = hvac.Client(
+    url='https://my-vault-server.com:8200',
+    token='<your-token>'
+)
+
+mount_point = 'mysecrets'
+
+paths, secrets = list_secrets_and_paths(mount_point, client)
+
+print("Paths in the '{}' mount point:".format(mount_point))
+for path in paths:
+    print("- {}".format(path))
+
+print("Secrets in the '{}' mount point:".format(mount_point))
+for secret in secrets:
+    print("- {}".format(secret))
