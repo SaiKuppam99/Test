@@ -47,3 +47,23 @@ for path in paths:
 print("Secrets in the '{}' mount point:".format(mount_point))
 for secret in secrets:
     print("- {}".format(secret))
+
+    
+    import hvac
+
+# Create a Vault client object
+client = hvac.Client(url='https://vault.example.com', token='<your-token>')
+
+# Define the mount point you want to check
+mount_point = 'TASK'
+path = 'hvac'
+
+# List the available versions of the secret at the specified path
+versions_response = client.secrets.kv.v2.list_secret_versions(mount_point=mount_point, path=path)
+versions = versions_response['data']['versions']
+
+# Extract the latest version of the secret and print it
+latest_version = versions[-1]['version']
+secret_response = client.secrets.kv.v2.read_secret_version(mount_point=mount_point, path=path, version=latest_version)
+secret_data = secret_response['data']['data']
+print(f"Latest version of secret '{path}' is: {secret_data}")
