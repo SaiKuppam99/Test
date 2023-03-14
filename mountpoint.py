@@ -47,3 +47,21 @@ def list_secret_engine_paths_and_secrets(mount_point, path):
         else:
             paths.append(p)
     return paths, secrets
+
+from lib import vault
+
+mount_point = 'TASK'
+path = 'hvac'
+
+# List the available paths in the secret engine
+paths = vault.list_secret_engine_paths(mount_point, path)
+print(f"Paths: {paths}")
+
+# List the available secrets in the secret engine
+secrets = vault.list_secret_engine_secrets(mount_point, path)
+print(f"Secrets: {secrets}")
+
+# List the available paths and secrets in the secret engine
+paths, secrets = vault.list_secret_engine_paths_and_secrets(mount_point, path)
+print(f"Paths: {paths}")
+print(f"Secrets: {secrets}")
