@@ -1,9 +1,10 @@
+import os
 from functions.check_seal import check_vault_seal_status
 import hvac
 
-# Define the URL and token variables
-url = 'https://vault.example.com'
-token = '<your-token>'
+# Read the URL and token from environment variables
+url = os.environ['VAULT_URL']
+token = os.environ['VAULT_TOKEN']
 
 # Connect to Vault using the URL and token
 client = hvac.Client(url=url, token=token)
