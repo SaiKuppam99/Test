@@ -28,4 +28,11 @@ def check_secrets(client, mount_path):
     if not os.path.exists(bin_dir):
         os.mkdir(bin_dir)
 
-    # Write the secrets and paths to separate
+    # Write the secrets and paths to separate  files in the bin directory
+    with open(os.path.join(bin_dir, "secrets.txt"), "w") as f:
+        for key, value in secrets.items():
+            f.write(f"{key}: {value}\n")
+
+    with open(os.path.join(bin_dir, "paths.txt"), "w") as f:
+        for path in paths:
+            f.write(f"{path}\n")
