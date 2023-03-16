@@ -42,14 +42,22 @@ secrets_values_file = 'secrets_values.txt'
 write_secrets_file(secrets, secrets_values_file)
 
 
-def write_secret(secret, cluster_name):
-    """
-    Writes the given secret to a file with the format <cluster_name>-<key>-secret.
-    """
-    secret_path = secret['path']
-    secret_data = secret['data']['data']
-    with open('secrets.txt', 'a') as f:
-        for key, value in secret_data.items():
-            key_name = f"{cluster_name}-{key}-secret"
-            f.write(f"{key_name}: {value}\n")
+import os
+
+def modify_key_name(secret_file_path, cluster_name):
+    # Create a new file to write the modified lines
+    new_file_path = os.path.join(os.getcwd(), 'bin', f'{cluster_name}-secrets.txt')
+    with open(new_file_path, 'w') as new_file:
+        # Open the secrets file for reading
+        with open(secret_file_path, 'r') as f:
+            # Read each line and modify the key name
+            for line in f:
+                key, value = line.strip().split('=')
+                new_key = f'{cluster_name}-{key}-secret'
+                new_line = f'{new_key}: {value}\n'
+                # Write the modified line to the new file
+                new_file.write(new_line)
+    
+    return new_file_path
+
 
