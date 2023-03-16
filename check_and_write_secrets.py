@@ -1,32 +1,27 @@
-import os
-import hvac
+def check_and_write_secrets(client, mount_point, bin_dir):
+    # Read paths from bin/paths.txt
+    with open(f"{bin_dir}/paths.txt", "r") as f:
+        paths = f.read().splitlines()
 
+    # Loop through paths
+    for path in paths:
+        # Remove leading/trailing slashes
+        path = path.strip("/")
+        path_file_name = path.replace("/", "_")
 
-def check_and_write_secrets(client, mount_path):
-    # Create the bin directory if it doesn't exist
-    os.makedirs('bin', exist_ok=True)
+        # Check if any secrets exist in path
+        try:
+            secrets = client.secrets.kv.v2.list_secrets(mount_point=mount_point, path=path)["data"]["keys"]
+        except hvac.exceptions.InvalidPath:
+            continue
 
-    # Read the paths from the file and iterate through them
-    with open('bin/paths.txt', 'r') as f:
-        for path in f.read().splitlines():
-            # Check if any secrets exist at this path
-            secret_response = client.secrets.kv.v2.read_secret_version(
-                mount_point=mount_path,
-                path=path
-            )
-            if 'data' in secret_response:
-                # Write the secrets to a file
-                with open(f'bin/{path}_secret.txt', 'w') as secret_file:
-                    for key, value in secret_response['data']['data'].items():
-                        secret_file.write(f'{key}={value}\n')
+        # Write secrets to file
+        if secrets:
+            with open(f"{bin_dir}/{path_file_name}_secret.txt", "w") as f:
+                for secret in secrets:
+                    data = client.secrets.kv.v2.read_secret_version(mount_point=mount_point, path=f"{path}/{secret}")["data"]["data"]
+                    f.write(f"{secret}={data}\n")
 
-            # Check if any subpaths exist under this path
-            list_response = client.secrets.kv.v2.list_secrets(
-                mount_point=mount_path,
-                path=path + '/'
-            )
-            if 'data' in list_response:
-                # Write the subpaths to a file
-                with open(f'bin/{path}_path.txt', 'w') as path_file:
-                    for subpath in list_response['data']['keys']:
-                        path_file.write(f'{subpath}\n')
+        # Write path to file
+        with open(f"{bin_dir}/{path_file_name}_path.txt", "w") as f:
+            f.write(path)
