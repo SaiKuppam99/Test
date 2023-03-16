@@ -31,22 +31,28 @@ def _get_secrets(client, folder):
     secrets = []
 
     # List the items in the folder
-    items = client.secrets.kv.v2.list_secrets(path=folder)['data']['keys']
+    try:
+        items = client.secrets.kv.v2.list_secrets(path=folder)['data']['keys']
+    except:
+        return secrets
 
     # Iterate over the items
     for item in items:
         item_path = os.path.join(folder, item)
 
         # Check if the item is a folder or a secret
-        if client.secrets.kv.v2.read_secret_version(path=item_path)['data'] is not None:
-            # If it's a secret, add its value to the list
-            secret = client.secrets.kv.v2.read_secret_version(path=item_path)['data']['data']['value']
-            secrets.append(secret)
-        else:
+        if item.endswith('/'):
             # If it's a folder, recursively read the secrets inside it
             secrets.extend(_get_secrets(client, item_path))
+        else:
+            # If it's a secret, add its value to the list
+            secret_version = client.secrets.kv.v2.read_secret_version(path=item_path)
+            if secret_version is not None and 'data' in secret_version and 'data' in secret_version['data']:
+                secret = secret_version['data']['data']['value']
+                secrets.append(secret)
 
     return secrets
+
 
 # Example usage:
 vault_addr = 'http://localhost:8200'
