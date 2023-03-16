@@ -40,3 +40,16 @@ client = hvac.Client(url=vault_addr, token=token)
 # Write the key-value pairs of secrets to a file
 secrets_values_file = 'secrets_values.txt'
 write_secrets_file(secrets, secrets_values_file)
+
+
+def write_secret(secret, cluster_name):
+    """
+    Writes the given secret to a file with the format <cluster_name>-<key>-secret.
+    """
+    secret_path = secret['path']
+    secret_data = secret['data']['data']
+    with open('secrets.txt', 'a') as f:
+        for key, value in secret_data.items():
+            key_name = f"{cluster_name}-{key}-secret"
+            f.write(f"{key_name}: {value}\n")
+
