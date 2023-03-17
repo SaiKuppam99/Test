@@ -1,10 +1,7 @@
 cat pmp_export.csv | jq -Rsn '
-    [         split("\n")[] |
-        select(length > 0) |
-        split(",") |
-        {
-            "key": .[0],
-            "value": .[1]
-        }
+    [ 
+        (input | split(",") | select(length > 0)) as $keys |
+        (inputs | split(",") | select(length > 0)) |
+        reduce range(0; $keys | length) as $i ({}; .[$keys[$i]] = .[$i])
     ]
 ' > vault_import.json
