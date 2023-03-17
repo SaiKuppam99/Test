@@ -1,0 +1,10 @@
+cat pmp_export.csv | jq -Rsn '
+    [         split("\n")[] |
+        select(length > 0) |
+        split(",") |
+        {
+            "key": .[0],
+            "value": .[1]
+        }
+    ]
+' > vault_import.json
