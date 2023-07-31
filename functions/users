@@ -1,0 +1,32 @@
+import boto3
+
+def create_mysql_user(cluster_identifier, username, password):
+    try:
+        # Create an RDS client
+        rds_client = boto3.client('rds')
+
+        # Retrieve the Aurora cluster's endpoint address and port
+        response = rds_client.describe_db_clusters(DBClusterIdentifier=cluster_identifier)
+        cluster_endpoint = response['DBClusters'][0]['Endpoint']
+        cluster_port = response['DBClusters'][0]['Port']
+
+        # Create the MySQL user using the 'admin' user (master user) credentials
+        with pymysql.connect(host=cluster_endpoint, port=cluster_port, user='admin', password='admin_password') as connection:
+            with connection.cursor() as cursor:
+                # Replace 'database_name' with the actual name of your database
+                cursor.execute(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}';")
+                cursor.execute(f"GRANT ALL PRIVILEGES ON database_name.* TO '{username}'@'%';")
+                connection.commit()
+
+        print(f"User '{username}' created successfully with full privileges.")
+        
+    except Exception as e:
+        print("Error:", e)
+
+if __name__ == "__main__":
+    # Replace 'your_cluster_identifier' with your actual Aurora cluster identifier
+    aurora_cluster_identifier = 'your_cluster_identifier'
+    new_username = 'new_user'
+    new_password = 'new_user_password'
+
+    create_mysql_user(aurora_cluster_identifier, new_username, new_password)
