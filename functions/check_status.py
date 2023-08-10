@@ -102,3 +102,32 @@ resource "aws_cloudwatch_metric_alarm" "rds_alarms_90" {
 resource "aws_sns_topic" "example_sns" {
   name = "example-sns-topic"
 }
+
+
+#!/bin/bash
+
+# Prompt for Azure AD credentials
+read -p "Enter your Azure AD username: " azure_ad_username
+read -s -p "Enter your Azure AD password: " azure_ad_password
+echo  # Print a new line after password input
+
+# Install saml2aws if not already installed
+if ! command -v saml2aws &> /dev/null; then
+    echo "saml2aws not found. Installing..."
+    curl -Lo /usr/local/bin/saml2aws https://github.com/Versent/saml2aws/releases/latest/download/saml2aws_$(uname -s)_amd64
+    chmod +x /usr/local/bin/saml2aws
+fi
+
+# Configure saml2aws
+saml2aws configure \
+  --url 'https://account.activedirectory.windowsazure.com' \
+  --username "$azure_ad_username" \
+  --idp-provider 'AzureAD' \
+  --profile default \
+  --region eu-west-2 \
+  --app-id 'xxxxxxxxxxxxxxxxxxxxxxxxxx' \
+  --skip-prompt \
+  --mfa 'Auto'
+
+# Authenticate and obtain AWS credentials
+saml2aws login
