@@ -45,4 +45,21 @@ azure_ad_username = input("Enter your Azure AD username: ")
 azure_ad_password = input("Enter your Azure AD password: ")
 azure_ad_app_id = input("Enter the Azure AD app ID: ")
 
-# ... (rest of the configuration and authentication steps)
+# Configure saml2aws
+configure_command = [
+    'saml2aws',
+    'configure',
+    '--url', 'https://account.activedirectory.windowsazure.com',
+    '--username', azure_ad_username,
+    '--idp-provider', 'AzureAD',
+    '--profile', 'default',
+    '--region', aws_region,
+    '--app-id', azure_ad_app_id,
+    '--skip-prompt',
+    '--mfa', 'Auto'
+]
+
+subprocess.run(configure_command, check=True)
+
+# Authenticate and obtain AWS credentials
+subprocess.run(['saml2aws', 'login'], check=True)
