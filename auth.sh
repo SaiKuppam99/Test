@@ -5,21 +5,28 @@ is_command_available() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Check if saml2aws is installed
-if ! is_command_available 'saml2aws'; then
+# Check if saml2aws is already installed
+if is_command_available 'saml2aws'; then
+    echo "saml2aws is already installed."
+else
+    # Create the directory for saml2aws if it doesn't exist
+    mkdir -p ~/.local/bin
+
     echo "saml2aws is not installed. Installing..."
 
-    # Determine the system's platform (Linux or macOS)
-    system_platform=$(uname -s | tr '[:upper:]' '[:lower:]')
+    # Get the latest release version from GitHub
+    CURRENT_VERSION=$(curl -Ls https://api.github.com/repos/Versent/saml2aws/releases/latest | grep 'tag_name' | cut -d'v' -f2 | cut -d'"' -f1)
 
-    # Define the saml2aws download URL based on the platform
-    download_url="https://github.com/Versent/saml2aws/releases/latest/download/saml2aws_${system_platform}_amd64"
+    # Download and extract saml2aws
+    wget -c "https://github.com/Versent/saml2aws/releases/download/v${CURRENT_VERSION}/saml2aws_${CURRENT_VERSION}_linux_amd64.tar.gz" -O - | tar -xzv -C ~/.local/bin
 
-    # Download saml2aws using curl
-    sudo curl -Lo /usr/local/bin/saml2aws "$download_url"
-    
     # Make saml2aws executable
-    sudo chmod +x /usr/local/bin/saml2aws
+    chmod u+x ~/.local/bin/saml2aws
+
+    # Update the command hash
+    hash -r
+
+    echo "saml2aws has been installed."
 fi
 
 # Determine the AWS region to use
