@@ -16,13 +16,9 @@ def generate_sql_statements_from_file(file_path):
             else:
                 db_name = f"`{db_name}`"
 
-            if isinstance(table_permissions, list):
-                # Permissions for all tables in the database
-                table_permissions = "*"
-
             for table_name, actions in table_permissions.items():
                 if table_name == "*":
-                    table_name = "*.*"
+                    table_name = f"{db_name}.*"
                 else:
                     table_name = f"`{db_name}`.`{table_name}`"
 
