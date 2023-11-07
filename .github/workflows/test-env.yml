@@ -11,5 +11,5 @@ jobs:
     steps:
     - name: test env values
       run: |
-        echo ${{ env.DAY }}
+        echo ${{ vars.DAY }}
       
