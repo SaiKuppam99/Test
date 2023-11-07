@@ -13,10 +13,10 @@ on:
 jobs:
   test-env:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.input.env_name }}
+    environment: ${{ github.event.inputs.env_name }}
 
     steps:
     - name: test env values
       run: |
-        echo "Today is ${{ vars.DAY }} as per env ${{ github.event.input.env_name }}"
+        echo "Today is ${{ vars.DAY }} as per env ${{ github.event.inputs.env_name }}"
       
