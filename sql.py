@@ -13,18 +13,24 @@ def generate_sql_statements_from_file(file_path):
         for db_name, table_permissions in permissions.items():
             if db_name == "*":
                 db_name = "*.*"
+                if isinstance(table_permissions, list):
+                    for action in table_permissions:
+                        sql_statement = f"GRANT {action} ON {db_name} TO '{username}'@'%';"
+                        sql_statements.append(sql_statement)
             else:
                 db_name = f"`{db_name}`"
-
-            for table_name, actions in table_permissions.items():
-                if table_name == "*":
-                    table_name = f"{db_name}.*"
-                else:
-                    table_name = f"`{db_name}`.`{table_name}`"
-
-                for action in actions:
-                    sql_statement = f"GRANT {action} ON {table_name} TO '{username}'@'%';"
-                    sql_statements.append(sql_statement)
+                if isinstance(table_permissions, dict):
+                    for table_name, actions in table_permissions.items():
+                        if table_name == "*":
+                            table_name = "*.*"
+                            for action in actions:
+                                sql_statement = f"GRANT {action} ON {db_name}.{table_name} TO '{username}'@'%';"
+                                sql_statements.append(sql_statement)
+                        else:
+                            table_name = f"`{table_name}`"
+                            for action in actions:
+                                sql_statement = f"GRANT {action} ON {db_name}.{table_name} TO '{username}'@'%';"
+                                sql_statements.append(sql_statement)
 
     return sql_statements
 
