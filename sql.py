@@ -34,6 +34,35 @@ def generate_sql_statements_from_file(file_path):
 
     return sql_statements
 
+def execute_sql_statements(sql_statements, db_host, db_user, db_password, db_name):
+    try:
+        connection = mysql.connector.connect(
+            host=db_host,
+            user=db_user,
+            password=db_password,
+            database=db_name
+        )
+
+        if connection.is_connected():
+            cursor = connection.cursor()
+
+            for statement in sql_statements:
+                cursor.execute(statement)
+                print(f"Executed: {statement}")
+
+            connection.commit()
+
+    except mysql.connector.Error as error:
+        print(f"Error: {error}")
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+            print("Database connection closed.")
+
 # Example usage:
 json_file_path = 'path/to/your/json/file.json'
 sql_statements = generate_sql_statements_from_file(json_file_path)
