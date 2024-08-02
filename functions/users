@@ -30,3 +30,7 @@ if __name__ == "__main__":
     new_password = 'new_user_password'
 
     create_mysql_user(aurora_cluster_identifier, new_username, new_password)
+
+
+
+#this is for testing
